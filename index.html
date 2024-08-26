@@ -1,85 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Your Page Title</title>
-    <meta name="description" content="A brief description of your page">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mvp.css/1.14.0/mvp.css"> 
-    <link rel="stylesheet" href="./styles.css"> 
-    
-    <!-- Example: <meta name="keywords" content="HTML, CSS, JavaScript"> -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paddle Prices List</title>
+  <!-- Include Paddle's JavaScript SDK -->
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script> 
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #checkout-button {
+      display: block;
+      width: 200px;
+      padding: 10px;
+      margin: 20px auto;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #checkout-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-<div class="page-container">
-  <h1>Sign up now</h1>
-  <div class="grid">
-    <div class="checkout-container">
-    </div>
-    <div>
-      <h3>Items</h3>
-      <table class="items-table">
-        <thead>
-        <tr>
-          <th>Product name</th>
-          <th>Price name</th>
-          <th>Quantity</th>
-          <th>Total</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td></td>
-          <td></td>
-          <td>0</td>
-          <td>00.00</td>
-        </tr>
-        </tbody>
-      </table>
-      <h3>Totals</h3>
-      <table>
-        <tbody>
-        <tr>
-          <td>One-time charges</td>
-          <td id="oneTimeTotal">0.00</td>
-        </tr>
-        <tr>
-          <td>Recurring charges</td>
-          <td id="recurringTotal">0.00</td>
-        </tr>
-        <tr>
-          <td>Discount</td>
-          <td id="discountTotal">0.00</td>
-        </tr>
-        <tr>
-          <td>Taxes</td>
-          <td id="taxTotal">0.00</td>
-        </tr>
-        <tr>
-          <td>Total today</td>
-          <td id="totalToday">0.00</td>
-        </tr>
-        </tbody>
-      </table>
-      <p>
-        <a href="#" onclick="switchPlan()"><b>Switch plan</b></a>
-      </p>
-    </div>
-  </div>
-</div>
-<footer>
-  <hr>
-  <p><small>
-    For the tutorial, check out:
-    <a href="https://developer.paddle.com/build/checkout/build-branded-inline-checkout?utm_source=dx&utm_medium=codepen">Build an inline checkout</a> -
-    <a href="https://developer.paddle.com/?utm_source=dx&utm_medium=codepen">
-      developer.paddle.com
-    </a>
-    </small></p>
-</footer>
-<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script> 
-<script src="./paddle.js"></script> 
+  <h1>Select Products to Buy</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Product Name</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody id="product-list">
+      <!-- JavaScript will dynamically insert product rows here -->
+    </tbody>
+  </table>
+  
+  <!-- Button to initiate checkout -->
+  <button id="checkout-button" onclick="initiateCheckout()">Buy Selected</button>
+
+  <script>
+    // Initialize Paddle with your Vendor ID
+    Paddle.Environment.set("sandbox");
+    Paddle.Initialize({
+      token: "test_a9bf67069a7251da0f4a87ccf43", // replace with a client-side token
+      // eventCallback: updateTable
+    });
+
+    const products = [{
+      quantity: 1,
+      priceId: 'pri_01j588t10jpwcyq8gjg33jbs5s',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01j588rxgw7gaj6rae3g6dsafj',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01j588sfmqnyr1q6y2489tknnw',
+    }];
+    var request = {
+      items: products,
+      address: {
+        countryCode: 'US'
+      }
+    }
+
+    Paddle.PricePreview(request)
+      .then((result) => {
+        var items = result.data.details.lineItems;
+        const productList = document.getElementById('product-list');
+        items.forEach(item => {
+          console.log(item)
+          const product = item.product;
+          const price = item.price;
+          const productRow = document.createElement('tr');
+          productRow.innerHTML = `
+            <td><input type="checkbox" id="product-${price.id}" value="${price.id}"></td>
+            <td>${product.name} (${price.billingCycle.interval})</td>
+            <td>${item.formattedTotals.total}</td>
+          `;
+          productList.appendChild(productRow);
+        });
+        
+
+      })
+
+   
+    // Function to initiate checkout with selected products
+    function initiateCheckout() {
+      const selectedProductIds = [];
+      products.forEach(product => {
+        const checkbox = document.getElementById(`product-${product.priceId}`);
+        if (checkbox.checked) {
+          selectedProductIds.push({ priceId: product.priceId, quantity: 1});
+        }
+      });
+
+      if (selectedProductIds.length > 0) {
+        Paddle.Checkout.open({
+          items: selectedProductIds,
+          successCallback: function(data) {
+            alert("Purchase successful! Order ID: " + data.order.id);
+          },
+          closeCallback: function() {
+            console.log("Checkout closed.");
+          }
+        })
+      } else {
+        alert("Please select at least one product to buy.");
+      }
+    }
+  </script>
 </body>
 </html>
