@@ -67,12 +67,50 @@
       <tr>
         <th>Select</th>
         <th>Product Name</th>
+        <th>Trial Period</th>
         <th>Price</th>
       </tr>
     </thead>
-    <tbody id="product-list">
-      <!-- JavaScript will dynamically insert product rows here -->
-    </tbody>
+    <tbody id="product-list-1"/>
+  </table>
+
+  <h1>Select Products with recurring discount</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Product Name</th>
+        <th>Trial Period</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody id="product-list-2"/>
+  </table>
+
+  <h1>Select Products with 2 periods discount</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Product Name</th>
+        <th>Trial Period</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody id="product-list-3"/>
+  </table>
+
+  <h1>Select Products with one time discount</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Product Name</th>
+        <th>Trial Period</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody id="product-list-4"/>
   </table>
   
   <!-- Button to initiate checkout -->
@@ -86,10 +124,7 @@
       // eventCallback: updateTable
     });
 
-    const products = [{
-      quantity: 1,
-      priceId: 'pri_01j588t10jpwcyq8gjg33jbs5s',
-    },
+    const products = [
     {
       quantity: 1,
       priceId: 'pri_01j588rxgw7gaj6rae3g6dsafj',
@@ -109,57 +144,159 @@
     {
       quantity: 1,
       priceId: 'pri_01jcd8qcsgrvb09btd7mfvp3bx',
-    }];
-    var request = {
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01jhspn19qz2aqzcx7524rqzpm',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01jhspm7aj3rs59t8dndyf48hz',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01jj9saz6q0y5b3yh6a8xzgrjn',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01jj9sa9e3ewrxq9gqj9g4dwtb',
+    },
+    {
+      quantity: 1,
+      priceId: 'pri_01jjktnxh9p6fn35z1vpw8nqxz', // otp
+    }    
+    ];
+
+    var prices_without_discount_request = {
       items: products,
       address: {
         countryCode: 'US'
       }
     }
 
-    Paddle.PricePreview(request)
+    function createProductRow(item) {
+      // console.log(item)
+      const product = item.product;
+      const price = item.price;
+      const trial_period = price.trialPeriod;
+      const billing_cycle = price.billingCycle;
+      const productRow = document.createElement('tr');
+      productRow.innerHTML = `
+        <td><input type="radio" name="product" value="${price.id}"></td>
+        <td>${product.name} (${billing_cycle !== null ? price.billingCycle.interval : 'One time'})</td>
+        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : 'No Trial'}</td>
+        <td>${item.formattedTotals.total}</td>
+      `;
+      return productRow;
+    }
+
+    function createProductWithDiscountRow(item) {
+      // console.log(item)
+      const product = item.product;
+      const price = item.price;
+      const trial_period = price.trialPeriod;
+      const billing_cycle = price.billingCycle;
+      const discountId = item.discounts !== null ? item.discounts[0].discount.id : null;
+      const productRow = document.createElement('tr');
+      productRow.innerHTML = `
+        <td><input type="radio" name="product" onclick="setSelectedIds('${price.id}', '${discountId}')"></td>
+        <td>${product.name} (${billing_cycle !== null ? price.billingCycle.interval : 'One time'})</td>
+        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : 'No Trial'}</td>
+        <td>${item.formattedTotals.subtotal}</td>
+      `;
+      return productRow;
+    }
+
+    Paddle.PricePreview(prices_without_discount_request)
       .then((result) => {
         var items = result.data.details.lineItems;
-        const productList = document.getElementById('product-list');
+        const productList = document.getElementById('product-list-1');
         items.forEach(item => {
-          console.log(item)
-          const product = item.product;
-          const price = item.price;
-          const productRow = document.createElement('tr');
-          productRow.innerHTML = `
-            <td><input type="checkbox" id="product-${price.id}" value="${price.id}"></td>
-            <td>${product.name} (${price.billingCycle.interval})</td>
-            <td>${item.formattedTotals.total}</td>
-          `;
-          productList.appendChild(productRow);
-        });
-        
-
+          productListRow = createProductRow(item);
+          productList.appendChild(productListRow);                  
+        });    
       })
 
-   
+    const productsWithDiscounts = [
+      {
+        quantity: 1,
+        priceId: 'pri_01jjrvhkjrnwkg3q4cy7he55dw' //  1 Day w discount
+      },
+      {
+        quantity: 1,
+        priceId: 'pri_01jjktnxh9p6fn35z1vpw8nqxz', // otp
+      }    
+    ]
+
+    var prices_with_recurring_discount_request = {
+      items: productsWithDiscounts,
+      address: {
+        countryCode: 'US'
+      },
+      discountId: 'dsc_01jjrvp2gx1mv1vd3e8qep04r8' // recurring never ending discount
+    }
+
+    Paddle.PricePreview(prices_with_recurring_discount_request)
+      .then((result) => {
+        var items = result.data.details.lineItems;
+        const productList = document.getElementById('product-list-2');
+        items.forEach(item => {
+          productListRow = createProductWithDiscountRow(item);
+          productList.appendChild(productListRow);                  
+        });    
+      })
+
+
+    var prices_with_ending_recurring_discount_request = {
+      items: productsWithDiscounts,
+      address: {
+        countryCode: 'US'
+      },
+      discountId: 'dsc_01jjrvnaqd674wz3bwm1x8f830' // recurring - ends after 2 periods
+    }
+
+    Paddle.PricePreview(prices_with_ending_recurring_discount_request)
+      .then((result) => {
+        var items = result.data.details.lineItems;
+        const productList = document.getElementById('product-list-3');
+        items.forEach(item => {
+          productListRow = createProductWithDiscountRow(item);
+          productList.appendChild(productListRow);                  
+        });    
+      })
+
+    var prices_with_one_time_discount_request = {
+      items: productsWithDiscounts,
+      address: {
+        countryCode: 'US'
+      },
+      discountId: 'dsc_01jjrvkh9cya2b5z83xhkp8ewc' // one time discount
+    }
+
+    Paddle.PricePreview(prices_with_one_time_discount_request)
+      .then((result) => {
+        var items = result.data.details.lineItems;
+        const productList = document.getElementById('product-list-4');
+        items.forEach(item => {
+          productListRow = createProductWithDiscountRow(item);
+          productList.appendChild(productListRow);                  
+        });    
+      })
+
+    function setSelectedIds(productId, discountId) {
+      selectedProductId = productId;
+      selectedDiscountId = discountId;
+    }
+      
     // Function to initiate checkout with selected products
     function initiateCheckout() {
-      const selectedProductIds = [];
-      products.forEach(product => {
-        const checkbox = document.getElementById(`product-${product.priceId}`);
-        if (checkbox.checked) {
-          selectedProductIds.push({ priceId: product.priceId, quantity: 1});
-        }
-      });
-
-      if (selectedProductIds.length > 0) {
+      if (selectedProductId && selectedDiscountId) {
         Paddle.Checkout.open({
-          items: selectedProductIds,
-          successCallback: function(data) {
-            alert("Purchase successful! Order ID: " + data.order.id);
-          },
-          closeCallback: function() {
-            console.log("Checkout closed.");
-          }
-        })
+          items: [{ priceId: selectedProductId, quantity: 1 }],
+          discountId: selectedDiscountId,
+        });
       } else {
-        alert("Please select at least one product to buy.");
+        alert("Please select a product first.");
       }
     }
   </script>
