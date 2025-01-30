@@ -4,25 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paddle Prices List</title>
-  <!-- Include Paddle's JavaScript SDK -->
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script> 
+  <script type="text/javascript" src="products.js"></script>
+  <script type="text/javascript">
+    Paddle.Environment.set("sandbox");
+  </script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
       background-color: #f0f0f0;
     }
 
-    h1 {
+    h2 {
       text-align: center;
       color: #333;
+    }
+
+    h3 {
+      text-align: left;
+      color: #333;
+      font-size: 15px;
+      margin-left: 10px;
+    }
+
+    div {
+      margin: 10px auto;
+      padding: 10px;
     }
 
     table {
       width: 100%;
       max-width: 600px;
-      margin: 20px auto;
+      margin: 0px auto;
       border-collapse: collapse;
       background-color: #fff;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -30,16 +45,30 @@
 
     th, td {
       padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #f4f4f4;
+      text-align: center;
+      border-bottom: 2px solid #ddd;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
     tr:hover {
       background-color: #f1f1f1;
+    }
+
+    #env-button {
+      display: block;
+      width: 200px;
+      padding: 10px;
+      margin: 10px auto;
+      font-size: 18px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #env-button:hover {
+      background-color: #0056b3;
     }
 
     #checkout-button {
@@ -61,137 +90,47 @@
   </style>
 </head>
 <body>
-  <h1>Select Products to Buy</h1>
+  <h2>Environment to load products from</h1>
   <table>
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Product Name</th>
-        <th>Trial Period</th>
-        <th>Price</th>
-      </tr>
-    </thead>
-    <tbody id="product-list-1"/>
+    <tr>
+      <td><button id="env-button" onclick="loadDevelopment()">Development</button> [Sandbox mode]</td>
+      <td><button id="env-button" onclick="loadProductionSandbox()">Production</button> [Sandbox mode]</td>
+    </tr>
   </table>
 
-  <h1>Select Products with recurring discount</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Product Name</th>
-        <th>Trial Period</th>
-        <th>Price</th>
-      </tr>
-    </thead>
-    <tbody id="product-list-2"/>
-  </table>
-
-  <h1>Select Products with 2 periods discount</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Product Name</th>
-        <th>Trial Period</th>
-        <th>Price</th>
-      </tr>
-    </thead>
-    <tbody id="product-list-3"/>
-  </table>
-
-  <h1>Select Products with one time discount</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Product Name</th>
-        <th>Trial Period</th>
-        <th>Price</th>
-      </tr>
-    </thead>
-    <tbody id="product-list-4"/>
-  </table>
+  <div id="container"/>
   
-  <!-- Button to initiate checkout -->
-  <button id="checkout-button" onclick="initiateCheckout()">Buy Selected</button>
+  <script>  
 
-  <script>
-    // Initialize Paddle with your Vendor ID
-    Paddle.Environment.set("sandbox");
-    Paddle.Initialize({
-      token: "test_a9bf67069a7251da0f4a87ccf43", // replace with a client-side token
-      // eventCallback: updateTable
-    });
-
-    const products = [
-    {
-      quantity: 1,
-      priceId: 'pri_01j588rxgw7gaj6rae3g6dsafj',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01j588sfmqnyr1q6y2489tknnw',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jcd8h24d4gdaqhdgfbjxg88n',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jcd8qvggsd4ea2qvm6e2acnw',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jcd8qcsgrvb09btd7mfvp3bx',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jhspn19qz2aqzcx7524rqzpm',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jhspm7aj3rs59t8dndyf48hz',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jj9saz6q0y5b3yh6a8xzgrjn',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jj9sa9e3ewrxq9gqj9g4dwtb',
-    },
-    {
-      quantity: 1,
-      priceId: 'pri_01jjktnxh9p6fn35z1vpw8nqxz', // otp
-    }    
-    ];
-
-    var prices_without_discount_request = {
-      items: products,
-      address: {
-        countryCode: 'US'
+    function initiatePaddle(environment) {
+      let token = undefined;
+      if (environment === "production") {
+        token = "test_aea81a4a1c6ee534e5d67c44fa7";
+      } else if (environment === "development") {
+        token = "test_a9bf67069a7251da0f4a87ccf43";
       }
+      console.log(token);
+      Paddle.Initialize({
+        token: token
+      });
     }
 
     function createProductRow(item) {
-      // console.log(item)
       const product = item.product;
       const price = item.price;
       const trial_period = price.trialPeriod;
       const billing_cycle = price.billingCycle;
       const productRow = document.createElement('tr');
       productRow.innerHTML = `
-        <td><input type="radio" name="product" value="${price.id}"></td>
+        <td><input type="radio" name="product" onclick="setSelectedProduct('${price.id}')"></td>
         <td>${product.name} (${billing_cycle !== null ? price.billingCycle.interval : 'One time'})</td>
-        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : 'No Trial'}</td>
+        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : '-'}</td>
         <td>${item.formattedTotals.total}</td>
       `;
       return productRow;
     }
 
     function createProductWithDiscountRow(item) {
-      // console.log(item)
       const product = item.product;
       const price = item.price;
       const trial_period = price.trialPeriod;
@@ -201,87 +140,91 @@
       productRow.innerHTML = `
         <td><input type="radio" name="product" onclick="setSelectedIds('${price.id}', '${discountId}')"></td>
         <td>${product.name} (${billing_cycle !== null ? price.billingCycle.interval : 'One time'})</td>
-        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : 'No Trial'}</td>
+        <td>${trial_period !== null ? trial_period.frequency + ' ' + trial_period.interval : '-'}</td>
         <td>${item.formattedTotals.subtotal}</td>
       `;
       return productRow;
     }
 
-    Paddle.PricePreview(prices_without_discount_request)
+    function loadProducts(products) {
+      console.log(products);
+
+      // generate base html
+      let html = `<table>
+        <thead><tr><th>Select</th><th>Product Name</th><th>Trial Period</th><th>Price</th></tr></thead>
+        <tbody id="product-list-normals"/>
+      `;
+       // load discount prices from paddle
+       products.discounts.forEach(discount => {
+        html += `
+          <tbody id="product-list-discount-${discount.id}"/>
+      `;})
+
+      // load standard prices from paddle
+      Paddle.PricePreview({
+        items: products.normals,
+        address: {
+          countryCode: 'US'
+        }
+      })
       .then((result) => {
         var items = result.data.details.lineItems;
-        const productList = document.getElementById('product-list-1');
+        const productList = document.getElementById('product-list-normals');
+        const productListHeader = document.createElement('tr');
+        productListHeader.innerHTML = `<tr><td colspan="4"><h3>Standard Products</h3></td></tr>`;
+        productList.appendChild(productListHeader) ;
         items.forEach(item => {
           productListRow = createProductRow(item);
           productList.appendChild(productListRow);                  
         });    
-      })
+      });
+        
 
-    const productsWithDiscounts = [
-      {
-        quantity: 1,
-        priceId: 'pri_01jjrvhkjrnwkg3q4cy7he55dw' //  1 Day w discount
-      },
-      {
-        quantity: 1,
-        priceId: 'pri_01jjktnxh9p6fn35z1vpw8nqxz', // otp
-      }    
-    ]
+      // load discount prices from paddle
+      products.discounts.forEach(discount => {
+      Paddle.PricePreview({
+          items: products.with_discounts,
+          address: {
+            countryCode: 'US'
+          },
+          discountId: discount.id,
+        })
+        .then((result) => {
+          var items = result.data.details.lineItems;
+          const productList = document.getElementById(`product-list-discount-${discount.id}`);
+          const productListHeader = document.createElement('tr');
+          productListHeader.innerHTML = `<tr><td colspan="4"><h3>${discount.name}</h3></td></tr>`;
+          productList.appendChild(productListHeader) ;
+          items.forEach(item => {
+            productListRow = createProductWithDiscountRow(item);
+            productList.appendChild(productListRow);                  
+          });    
+        });
+      });
 
-    var prices_with_recurring_discount_request = {
-      items: productsWithDiscounts,
-      address: {
-        countryCode: 'US'
-      },
-      discountId: 'dsc_01jjrvp2gx1mv1vd3e8qep04r8' // recurring never ending discount
+      html += `</table>
+      <button id="checkout-button" onclick="initiateCheckout()">Buy Selected</button>`; 
+      return html;
+    }
+    
+    function loadDevelopment() {
+        initiatePaddle("development");
+        let html = "<h2>Development products</h2>";
+        html += loadProducts(developmentProducts);
+        document.getElementById('container').innerHTML = html;
     }
 
-    Paddle.PricePreview(prices_with_recurring_discount_request)
-      .then((result) => {
-        var items = result.data.details.lineItems;
-        const productList = document.getElementById('product-list-2');
-        items.forEach(item => {
-          productListRow = createProductWithDiscountRow(item);
-          productList.appendChild(productListRow);                  
-        });    
-      })
-
-
-    var prices_with_ending_recurring_discount_request = {
-      items: productsWithDiscounts,
-      address: {
-        countryCode: 'US'
-      },
-      discountId: 'dsc_01jjrvnaqd674wz3bwm1x8f830' // recurring - ends after 2 periods
+    function loadProductionSandbox() {
+        initiatePaddle("production");
+        let html = "<h2>Production products</h2>";
+        html += loadProducts(productionProducts);
+        document.getElementById('container').innerHTML = html;
     }
 
-    Paddle.PricePreview(prices_with_ending_recurring_discount_request)
-      .then((result) => {
-        var items = result.data.details.lineItems;
-        const productList = document.getElementById('product-list-3');
-        items.forEach(item => {
-          productListRow = createProductWithDiscountRow(item);
-          productList.appendChild(productListRow);                  
-        });    
-      })
-
-    var prices_with_one_time_discount_request = {
-      items: productsWithDiscounts,
-      address: {
-        countryCode: 'US'
-      },
-      discountId: 'dsc_01jjrvkh9cya2b5z83xhkp8ewc' // one time discount
+    function setSelectedProduct(productId) {
+      selectedProductId = productId;
+      selectedDiscountId = undefined;
     }
-
-    Paddle.PricePreview(prices_with_one_time_discount_request)
-      .then((result) => {
-        var items = result.data.details.lineItems;
-        const productList = document.getElementById('product-list-4');
-        items.forEach(item => {
-          productListRow = createProductWithDiscountRow(item);
-          productList.appendChild(productListRow);                  
-        });    
-      })
 
     function setSelectedIds(productId, discountId) {
       selectedProductId = productId;
@@ -290,15 +233,22 @@
       
     // Function to initiate checkout with selected products
     function initiateCheckout() {
-      if (selectedProductId && selectedDiscountId) {
+      if (selectedProductId !== undefined && selectedDiscountId !== undefined) {
         Paddle.Checkout.open({
           items: [{ priceId: selectedProductId, quantity: 1 }],
           discountId: selectedDiscountId,
+        });
+      } else if (selectedProductId !== undefined) {
+        Paddle.Checkout.open({
+          items: [{ priceId: selectedProductId, quantity: 1 }],
         });
       } else {
         alert("Please select a product first.");
       }
     }
+
   </script>
+
+  
 </body>
 </html>
