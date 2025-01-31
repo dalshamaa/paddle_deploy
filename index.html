@@ -93,8 +93,8 @@
   <h2>Environment to load products from</h1>
   <table>
     <tr>
-      <td><button id="env-button" onclick="loadDevelopment()">Development</button> [Sandbox mode]</td>
-      <td><button id="env-button" onclick="loadProductionSandbox()">Production</button> [Sandbox mode]</td>
+      <td><button id="env-button" onclick="loadEnvironment('development')">Development</button> [Sandbox mode]</td>
+      <td><button id="env-button" onclick="loadEnvironment('production')">Production</button> [Sandbox mode]</td>
     </tr>
   </table>
 
@@ -109,7 +109,6 @@
       } else if (environment === "development") {
         token = "test_a9bf67069a7251da0f4a87ccf43";
       }
-      console.log(token);
       Paddle.Initialize({
         token: token
       });
@@ -147,7 +146,7 @@
     }
 
     function loadProducts(products) {
-      console.log(products);
+      // console.log(products);
 
       // generate base html
       let html = `<table>
@@ -206,19 +205,10 @@
       <button id="checkout-button" onclick="initiateCheckout()">Buy Selected</button>`; 
       return html;
     }
-    
-    function loadDevelopment() {
-        initiatePaddle("development");
-        let html = "<h2>Development products</h2>";
-        html += loadProducts(developmentProducts);
-        document.getElementById('container').innerHTML = html;
-    }
 
-    function loadProductionSandbox() {
-        initiatePaddle("production");
-        let html = "<h2>Production products</h2>";
-        html += loadProducts(productionProducts);
-        document.getElementById('container').innerHTML = html;
+    function loadEnvironment(environment) {
+      var newUrl = window.location.origin + window.location.pathname + "?environment=" + environment;
+      window.location.href = newUrl;
     }
 
     function setSelectedProduct(productId) {
@@ -246,6 +236,23 @@
         alert("Please select a product first.");
       }
     }
+
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+    let environment = params.environment; 
+    // console.log(environment);
+    if (environment !== null) {
+      initiatePaddle(environment);
+      let html = `<h2>${environment.charAt(0).toUpperCase() + environment.slice(1)} products</h2>`;
+      let products = developmentProducts;
+      if (environment === "production") {
+        products = productionProducts;
+      }
+      html += loadProducts(products);
+      document.getElementById('container').innerHTML = html;
+    }
+    
 
   </script>
 

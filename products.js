@@ -52,17 +52,19 @@ const developmentProducts =
             priceId: 'pri_01jjktnxh9p6fn35z1vpw8nqxz', // otp
         }   
     ],
+    // The following discounts will be applied to the products in the with_discounts array
+    // Each discount entry generates a new table section
     discounts: [
         {
-            name: 'Recurring Never Ending Discount',
+            name: 'Discounted products: recurring never ending',
             id: 'dsc_01jjrvp2gx1mv1vd3e8qep04r8', // recurring never ending discount
         },
         {
-            name: 'Recurring Discount Ends After 2 Periods',
+            name: 'Discounted products: recurring discount ends after 2 periods',
             id: 'dsc_01jjrvnaqd674wz3bwm1x8f830', // recurring - ends after 2 periods
         },
         {
-            name: 'One Time Discount',
+            name: 'Discounted products: one time discount',
             id: 'dsc_01jjrvkh9cya2b5z83xhkp8ewc', // one time discount
         }
     ]
