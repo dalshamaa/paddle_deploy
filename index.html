@@ -100,7 +100,7 @@
 
   <div id="container"/>
   
-  <div id="one-time-charge-section" style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+  <div id="one-time-charge-section" style="display: none; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
     <h2>Add One-Time Charge to Subscription</h2>
     <form id="one-time-charge-form" style="display: flex; flex-direction: column; gap: 15px;">
       <div>
@@ -195,6 +195,8 @@
       Paddle.Initialize({
         token: token
       });
+      // Show one-time charge section after environment is selected
+      document.getElementById('one-time-charge-section').style.display = 'block';
     }
 
     function createProductRow(item) {
