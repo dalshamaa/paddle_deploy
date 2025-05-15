@@ -197,6 +197,8 @@
       });
       // Show one-time charge section after environment is selected
       document.getElementById('one-time-charge-section').style.display = 'block';
+      // Initialize the charge type fields
+      toggleChargeType();
     }
 
     function createProductRow(item) {
@@ -292,6 +294,7 @@
     }
 
     function loadEnvironment(environment) {
+      initiatePaddle(environment);
       var newUrl = window.location.origin + window.location.pathname + "?environment=" + environment;
       window.location.href = newUrl;
     }
