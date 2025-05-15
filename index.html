@@ -433,8 +433,19 @@
       }
     }
 
-    // Add event listener for the one-time charge form
-    document.getElementById('one-time-charge-form').addEventListener('submit', addOneTimeCharge);
+    // Function to initialize one-time charge section
+    function initializeOneTimeCharge() {
+      const oneTimeChargeSection = document.getElementById('one-time-charge-section');
+      if (oneTimeChargeSection) {
+        oneTimeChargeSection.style.display = 'block';
+        oneTimeChargeSection.style.marginTop = '30px';
+        oneTimeChargeSection.style.padding = '20px';
+        oneTimeChargeSection.style.backgroundColor = '#fff';
+        oneTimeChargeSection.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+        oneTimeChargeSection.style.borderRadius = '5px';
+        toggleChargeType();
+      }
+    }
 
     const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
@@ -451,19 +462,23 @@
       html += loadProducts(products);
       document.getElementById('container').innerHTML = html;
       
-      // Show one-time charge section and initialize it
-      const oneTimeChargeSection = document.getElementById('one-time-charge-section');
-      oneTimeChargeSection.style.display = 'block';
-      toggleChargeType();
+      // Initialize one-time charge section after a short delay to ensure DOM is ready
+      setTimeout(initializeOneTimeCharge, 100);
     }
 
     // Check if we have a stored environment
     const storedEnvironment = localStorage.getItem('selectedEnvironment');
     if (storedEnvironment) {
-      const oneTimeChargeSection = document.getElementById('one-time-charge-section');
-      oneTimeChargeSection.style.display = 'block';
-      toggleChargeType();
+      setTimeout(initializeOneTimeCharge, 100);
     }
+
+    // Add event listener for the one-time charge form
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('one-time-charge-form');
+      if (form) {
+        form.addEventListener('submit', addOneTimeCharge);
+      }
+    });
 
   </script>
 
